@@ -1,17 +1,13 @@
 #!/bin/bash
 
-if [ $# -ne 2 ]; then
-	echo "avem nevoie de 2 fisiere pentru a putea evalua situatia de dinainte si de dupa modificarile efectuate"
-	exit 1
-fi
-before=$1
-after=$2
+ls -l > ls_before.txt
+df -h > df_before.txt
 
-awk  'NF==9 {print $0}' "$before" > ls_before.txt
-awk  'NF==9 {print $0}' "$after" > ls_after.txt
+echo  "starea initiala a fost salvata"
+read -p "Apasa tasta ENTER dupa ce ai terminat modificarile pentru a continua"
 
-grep "%" "$before" > df_before.txt
-grep "%" "$after" > df_after.txt
+ls -l > ls_after.txt
+df -h > df_after.txt
 
 diff ls_before.txt ls_after.txt > modificari_ls.txt
 
@@ -22,4 +18,13 @@ else
 	grep "^> " modificari_ls.txt
 	echo "linii sterse:"
 	grep "^< " modificari_ls.txt
+fi
+
+diff -y --suppress-common-lines df_before.txt df_after.txt > modificari_df.txt
+
+if [ ! -s modificari_df.txt ]; then
+	echo "nicio modificare"
+else
+	echo "vechi  |  nou"
+	cat modificari_df.txt
 fi
